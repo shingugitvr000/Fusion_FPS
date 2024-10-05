@@ -20,6 +20,9 @@ public class Player : NetworkBehaviour
 
     public float rotationSpeed = 720.0f;
 
+    //애니메이션 관련 선언
+    public NetworkMecanimAnimator _animator;
+
 
     private void Awake()
     {
@@ -75,6 +78,7 @@ public class Player : NetworkBehaviour
 
             // 애니메이션 파라미터 설정
             float currentMoveSpeed = moveDirection.magnitude * moveSpeed;
+            _animator.Animator.SetFloat("MoveSpeed", currentMoveSpeed);
 
             if (Object.HasInputAuthority)
             {
@@ -85,6 +89,7 @@ public class Player : NetworkBehaviour
         {
             // 움직이지 않을 때도 중력은 적용
             _cc.Move(Vector3.zero);
+            _animator.Animator.SetFloat("MoveSpeed", 0);
         }
     }
 
