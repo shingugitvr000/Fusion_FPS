@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
 {
     [SerializeField] private NetworkPrefabRef _playerPrefab;
-    //[SerializeField] private NetworkPrefabRef _gameManagerPrefab;
+    [SerializeField] private NetworkPrefabRef _gameManagerPrefab;
     private NetworkRunner _runner;
     private NetworkInputHandler _inputHandler;
     private string _roomName = "TestRoom"; // 기본 방 이름
@@ -73,45 +73,33 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
         else
         {
             GUILayout.BeginArea(new Rect(10, 10, 300, 300));
-
-            // GameManager가 존재하는지, State Authority를 가지고 있는지 확인
-            if (GameManager.Instance != null && GameManager.Instance.HasStateAuthority)
+            if (GameManager.Instance != null && GameManager.Instance.IsGameStarted)
             {
-                if (GameManager.Instance.IsGameStarted)
-                {
-                    GUILayout.Label("게임 진행 중");
-                }
-                else
-                {
-                    if (GUILayout.Button("Ready"))
-                    {
-                        Debug.Log("Ready button clicked");
-                        if (GameManager.Instance != null)
-                        {
-                            GameManager.Instance.RPC_PlayerReady(_runner.LocalPlayer);
-                        }
-                        else
-                        {
-                            Debug.LogError("GameManager instance is null");
-                        }
-                    }
-                    if (GameManager.Instance != null)
-                    {
-                        GUILayout.Label($"현재 플레이어 수: {GameManager.Instance.PlayerCount}");
-                        GUILayout.Label($"준비 상태: {GameManager.Instance.GetPlayerState(_runner.LocalPlayer)}");
-                    }
-                }
+                GUILayout.Label("게임 진행 중");
             }
             else
             {
-                GUILayout.Label("GameManager가 아직 생성되지 않았습니다.");
+                if (GUILayout.Button("Ready"))
+                {
+                    Debug.Log("Ready button clicked");
+                    if (GameManager.Instance != null)
+                    {
+                        GameManager.Instance.RPC_PlayerReady(_runner.LocalPlayer);
+                    }
+                    else
+                    {
+                        Debug.LogError("GameManager instance is null");
+                    }
+                }
+                if (GameManager.Instance != null)
+                {
+                    GUILayout.Label($"현재 플레이어 수: {GameManager.Instance.PlayerCount}");
+                    GUILayout.Label($"준비 상태: {GameManager.Instance.GetPlayerState(_runner.LocalPlayer)}");
+                }
             }
-
             GUILayout.EndArea();
         }
     }
-
-
 
     async void StartGame(GameMode mode)
     {
@@ -200,7 +188,7 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
         return new Vector3(x, 1, z);
     }
 
-   
+
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {

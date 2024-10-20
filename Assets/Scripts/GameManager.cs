@@ -6,7 +6,6 @@ using System.Linq;
 public class GameManager : NetworkBehaviour
 {
     private static GameManager _instance;
-
     public static GameManager Instance
     {
         get
@@ -14,19 +13,12 @@ public class GameManager : NetworkBehaviour
             if (_instance == null)
             {
                 _instance = FindObjectOfType<GameManager>();
-                if (_instance == null)
-                {
-                    GameObject go = new GameObject("GameManager");
-                    _instance = go.AddComponent<GameManager>();
-                }
             }
             return _instance;
         }
     }
 
     [Networked] public NetworkBool IsGameStarted { get; set; }
-
-    [Networked] public int MyPlayerType { get; set; }
     [Networked] public int PlayerCount { get; set; }
     [Networked] private NetworkDictionary<PlayerRef, NetworkBool> PlayerReadyStates => default;
 
@@ -40,12 +32,15 @@ public class GameManager : NetworkBehaviour
         if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject);  // 씬 전환 시 GameManager 유지
+            DontDestroyOnLoad(gameObject);
         }
         else if (_instance != this)
         {
-            Destroy(gameObject);  // 이미 인스턴스가 존재하면 중복 생성 방지
+            Destroy(gameObject);
+            return;
         }
+
+        Debug.Log("GameManager spawned and initialized");
     }
 
     public void PlayerJoined(PlayerRef player)
