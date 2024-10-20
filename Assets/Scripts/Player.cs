@@ -1,6 +1,5 @@
 using Fusion;
 using UnityEngine;
-using static Fusion.NetworkBehaviour;
 
 public class Player : NetworkBehaviour
 {
@@ -23,6 +22,7 @@ public class Player : NetworkBehaviour
     //애니메이션 관련 선언
     public NetworkMecanimAnimator _animator;
 
+    [Networked] public string CurrentState { get; set; }
 
     private void Awake()
     {
@@ -36,6 +36,7 @@ public class Player : NetworkBehaviour
         {
             SetupCamera();
         }
+        CurrentState = "Waiting";
     }
 
     private void SetupCamera()
@@ -50,6 +51,39 @@ public class Player : NetworkBehaviour
         {
             Debug.LogError("ThirdPersonCamera not found in the scene!");
         }
+    }
+
+    public void SetPlayerState(string newState)
+    {
+        CurrentState = newState;
+
+        switch (newState)
+        {
+            case "Playing":
+                // 게임 시작 시 필요한 로직
+                EnablePlayerControls();
+                break;
+            case "Finished":
+                // 게임 종료 시 필요한 로직
+                break;
+            case "Spectating":
+                DisablePlayerControls();
+                break;
+        }
+    }
+
+    private void EnablePlayerControls()
+    {
+        // 플레이어 컨트롤 비활성화 로직
+        _cc.enabled = true;
+        _animator.enabled = true;
+    }
+
+    private void DisablePlayerControls()
+    {
+        // 플레이어 컨트롤 비활성화 로직
+        _cc.enabled = false;
+        _animator.enabled = false;
     }
 
 
@@ -96,10 +130,14 @@ public class Player : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        if (CurrentState != "Playing")
+        {
+            return; // 플레이 중이 아니면 입력 처리하지 않음
+        }
+
         if (GetInput(out NetworkInputData data))
         {
             _networkButtons = data.buttons;
-
             _networkMoveDirection = data.direction;
 
             if (Object.HasInputAuthority)
@@ -107,7 +145,7 @@ public class Player : NetworkBehaviour
                 UpdateCameraDirection();
             }
 
-            MovePlayer(data.direction);            
+            MovePlayer(data.direction);
         }
 
         CheckAndFireProjectile();
